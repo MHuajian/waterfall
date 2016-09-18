@@ -33,12 +33,14 @@ body {
     cursor: pointer;
     opacity: 1;
     transition: opacity 1s;
+    display: block; /*为了兼容ie */
 }
 
 .pic .sz {
     color: #666;
     position: absolute;
     background: rgba(255, 255, 255, 0.5);
+    width: 275px; /*为了兼容ie  */
 }
 
 .pic img:hover{
