@@ -1,0 +1,47 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #ddd;
+}
+
+#content {
+    position: relative;
+}
+
+.box {
+    padding: 15px 0 0 15px;
+    float: left;
+}
+
+.pic {
+    border: 1px solid #fff;
+    border-radius: 5px;
+    padding: 10px;
+    background: #fff;
+    width: 275px;
+    position: relative;
+    line-height: 20px;
+    overflow: hidden;
+}
+
+.pic img {
+    width: 275px;
+    height: auto;
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 1s;
+}
+
+.pic .sz {
+    color: #666;
+    position: absolute;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.pic img:hover{
+    opacity: 0.5;
+}
+
