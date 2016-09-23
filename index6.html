@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>图片轮播</title>
+    <script type="text/javascript" src="http:libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <style rel=stylesheet type="text/css">
+    #displayPic {
+        height: 500px;
+        width: 400px;
+        position: relative;
+        margin: 0 auto;
+    }
+    
+    #displayPic:hover .direction {
+        display: block;
+    }
+    
+    div #Pic {
+        width: 400px;
+        height: 500px;
+        cursor: pointer;
+        position: absolute;
+    }
+    
+    .footPic {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 80px;
+        height: 20px;
+    }
+    
+    .footPic p {
+        display: inline;
+        padding-left: 10px;
+        cursor: pointer;
+    }
+    
+    .direction {
+        display: none;
+        cursor: pointer;
+        width: 40px;
+        height: 70px;
+    }
+    
+    .left img {
+        position: absolute;
+        left: 0;
+    }
+    
+    .right img {
+        position: absolute;
+        right: 0;
+    }
+    
+    .red {
+        color: red
+    }
+    </style>
+</head>
+
+<body>
+    <div id="displayPic">
+        <img src="./img/1.jpg" id="Pic">
+        <div class="left direction">
+            <img src="./img/left.png">
+        </div>
+        <div class="right direction">
+            <img src="./img/right.png" class="pic1">
+        </div>
+        <div class="footPic">
+            <p class="red">1</p>
+            <p>2</p>
+            <p>3</p>
+        </div>
+    </div>
+    <script type="text/javascript">
+    $(function() {
+        var data = [{
+            src: "1.jpg"
+        }, {
+            src: "2.jpg"
+        }, {
+            src: "3.jpg"
+        }];
+        $(".footPic").find('p').on('click', function() {
+            //index() 方法返回指定元素相对于其他指定元素的 index 位置
+            $("#Pic").attr('src', './img/' + data[$(this).index()].src);
+            //为当前p添加red 并使其同胞移除red
+            $(this).addClass('red').siblings().removeClass('red');
+        });
+        //控制方向图片要轮播的图片
+        $(".left").on('click', function() {
+            var len = data.length;
+            //  获取对象在数组对象中的索引值 
+            var ind = $("p").index($(".red"));
+            if (ind > 0) {
+                left(ind, data);
+            }
+            //使图片能够循环播放
+            if (ind === 0) {
+                ind = len;
+                left(ind, data);
+            }
+        });
+        $(".right").on('click', function() {
+            var len = data.length;
+            var ind = $("p").index($(".red"));
+            if (ind < len - 1) {
+                right(ind, data);
+            }
+            //使图片能够循环播放
+            if (ind == len - 1) {
+                ind = -1;
+                right(ind, data);
+            }
+        });
+
+        function left(ind, data) {
+            $("#Pic").attr('src', './img/' + data[ind - 1].src);
+            $("p").eq(ind - 1).addClass('red').siblings().removeClass('red');
+        }
+
+        function right(ind, data) {
+            $("#Pic").attr('src', './img/' + data[ind + 1].src);
+            $("p").eq(ind + 1).addClass('red').siblings().removeClass('red');
+        }
+        //设置方向图片的位置 居中
+        $(function() {
+            var divH = $("#displayPic").outerHeight() / 2;
+            var picH = $(".direction").eq(0).outerHeight() / 2;
+            $(".direction").each(function(index, el) {
+                $(this).find("img").css('top', divH - picH);
+            });
+        });
+        //设置图片的自动轮播
+        $(function() {
+            var len = data.length;
+            var ind = $("p").index($(".red"));
+            var timer = setInterval(play, 2000);
+            //如果鼠标移入到图片位置 则清除定时器及 图片不轮播
+            $("#Pic").on('mouseenter', function() {
+                clearInterval(timer);
+            });
+            //鼠标移出 则图片又开始轮播
+            $("#Pic").on('mouseout', function() {
+                timer = setInterval(play, 2000);
+            });
+            //轮播函数  
+            function play() {
+                $("#Pic").attr('src', './img/' + data[ind].src);
+                $("p").eq(ind).addClass('red').siblings().removeClass('red');
+                ind++;
+                if (ind == 3) {
+                    ind = 0;
+                }
+            }
+        });
+    });
+    </script>
+</body>
+
+</html>
