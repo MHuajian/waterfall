@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+    <meta charset="utf-8">
+
+    <head>
+        <title>分散瀑布流</title>
+        <script type="text/javascript" src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+        <style type="text/css">
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        
+        #main {
+            position: relative;
+        }
+        
+        .pin {
+            padding: 15px 0 0 15px;
+            float: left;
+            position: absolute;
+        }
+        
+        .box {
+            padding: 10px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 6px #ccc;
+            border-radius: 5px;
+            width: 162px;
+            position: relative;
+            cursor: pointer
+        }
+        
+        .box img {
+            width: 162px;
+            height: auto;
+        }
+        
+        .box p {
+            position: absolute;
+            bottom: -150px;
+            background: rgba(255, 255, 255, .6);
+            opacity: 0;
+        }
+        </style>
+        <script>
+        $(window).on("load", function() {
+            // 调用waterfall函数
+            waterfall();
+            var dataInt = {
+                'data': [{
+                    'src': '1.jpg'
+                }, {
+                    'src': '2.jpg'
+                }, {
+                    'src': '3.jpg'
+                }, {
+                    'src': '4.jpg'
+                }, {
+                    'src': '15.jpg'
+                }, {
+                    'src': '14.jpg'
+                }],
+                'p': "这个美女很看我很喜欢这个美女很好看很好看我很喜欢"
+            };
+            window.onscroll = function() {
+                // 拖动滚动条时
+                if (checkscrollside) {
+                    $(dataInt.data).each(function(index, value) {
+                        var oPin = $('<div></div>').addClass('pin').appendTo($("#main"));
+                        var oBox = $('<div></div>').addClass('box').appendTo(oPin);
+                        $('<img>').attr('src', './img/' + $(value).attr('src')).appendTo(oBox);
+                        $('<p>' + dataInt.p + '</p>').appendTo(oBox);
+                    });
+                }
+                pailie();
+                displayPic();
+            };
+        });
+        var arrs = [];
+
+        function waterfall() {
+            // 计算及定位数据块显示分散效果
+            var $box = $("#main").find(".pin");
+            var $Box = $box.eq(0).outerWidth();
+            //获取可视窗口的宽度
+            var $Wh = $(window).width();
+            var $Ww = $(window).height() / 2;
+            //获得一行有几列
+            var cols = Math.floor($Wh / $Box);
+            //使父元素居中对齐
+            $("#main").width(cols * $Box).css('margin', '0 auto');
+            //遍历$box
+            $box.each(function(index, value) {
+                if (index < cols) {
+                    arrs.push($box.eq(index).outerHeight());
+                }
+                //使刚开始数据块分散排列 使用Math.random的方法 随机排列
+                var haH = ($box.eq(index).outerHeight() / 2) + (Math.floor(Math.random() * 10 > 5 ? -1 : 1) * Math.floor(Math.random() * 200));
+                var haW = ($box.eq(index).outerWidth() / 2) + (Math.floor(Math.random() * 10 > 5 ? -1 : 1) * Math.floor(Math.random() * 200));
+                //是数据块随机排列
+                $box.eq(index).css({
+                    top: $Ww,
+                    left: "40%",
+                    marginTop: haH,
+                    marginLeft: haW
+                });
+            });
+            //然后调用anima()方法
+            anima();
+        }
+
+        function pailie() {
+            var $box = $("#main").find(".pin");
+            var $Box = $box.eq(0).outerWidth();
+            var $Wh = $(window).width();
+            var cols = Math.floor($Wh / $Box);
+            var eles = [];
+            //遍历数据块 重新定义瀑布流 
+            $box.each(function(index, value) {
+                if (index < cols) {
+                    eles.push($(value).outerHeight());
+                } else {
+                    var MinH = Math.min.apply(null, eles);
+                    var ind = $(eles).index(MinH);
+                    $(value).css({
+                        top: MinH,
+                        left: ind * $Box
+                    });
+                    eles[ind] += $(value).outerHeight();
+                }
+            });
+        }
+
+        function checkscrollside() {
+            // 检测是否具备了加载数据块的条件
+            var $box = $("#main").find('.pin');
+            var Wh = $(window).height();
+            var Sc = $(window).scrollTop();
+            //得到最后一张图片的一半的高度
+            //也可以用last方法同样也可以得到最后一张图片
+            var halfH = $box.eq($box.length - 1).outerHeight() / 2;
+            //得到最后一张图片距离父元素的距离
+            var HSc = $box.eq($box.length - 1).offset().top;
+            //判断加载条件 返回boolean值 如果图片的一半高度加上距离顶部的高度小于可视窗口加上鼠标滚动的距离  
+            return (halfH + HSc < Wh + Sc) ? true : false;
+        }
+
+        function anima() {
+            var $box = $("#main").find(".pin");
+            var $Box = $box.eq(0).outerWidth();
+            //获取可视窗口的宽度
+            var $Wh = $(window).width();
+            var cols = Math.floor($Wh / $Box);
+            $box.each(function(index, el) {
+                //使第一行数据块 按规则排列
+                if (index < cols) {
+                    $(el).animate({
+                        top: 0,
+                        left: index * $Box,
+                        marginLeft: 0,
+                        marginTop: 0
+                    }, 1000);
+                } else {
+                    //使第二行的数据块 按照规则排列
+                    var MinH = Math.min.apply(null, arrs);
+                    var ind = $(arrs).index(MinH);
+                    $(el).animate({
+                        top: MinH,
+                        left: ind * $Box,
+                        marginLeft: 0,
+                        marginTop: 0
+                    }, 1000);
+                    //将第一行最小的图片的高度加上它下面的图片高度
+                    arrs[ind] += $box.eq(index).outerHeight();
+                }
+            });
+            //调用函数 产生淡入淡出的动画效果
+            displayPic();
+        }
+
+        function displayPic() {
+            var $box = $("#main").find(".pin");
+            $box.on('mouseover', function() {
+                $(this).find('img').css('opacity', '0.5');
+                $(this).find('p').stop().animate({
+                    bottom: 14,
+                    opacity: 1
+                }, 400);
+            });
+            $box.on('mouseout', function() {
+                $(this).find('img').css('opacity', '1');
+                $(this).find('p').stop().animate({
+                    bottom: -150,
+                    opacity: 0
+                }, 400);
+            });
+        }
+        </script>
+    </head>
+
+    <body>
+        <div id="main">
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/1.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/2.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/15.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/4.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/5.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/6.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/7.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/1.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/2.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/15.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/4.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/5.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/6.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/7.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/1.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/2.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/15.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/4.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/5.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/1.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/2.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/15.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/4.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/5.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/6.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/7.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/6.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/7.jpg" />
+                    <p>这个美女很好看我很喜欢这个美女很好看我很喜欢这个美女很好看很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/8.jpg" />
+                    <p>这个美女很好看很好看我很喜欢这个美女很好看很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/9.jpg" />
+                    <p>这个美女很好看很好看我很喜欢这个美女很好看很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/10.jpg" />
+                    <p>这个美女很好看很好看我很喜欢这个美女很好看很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/11.jpg" />
+                    <p>这个美女很好看很好看我很喜欢这个美女很好看很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/12.jpg" />
+                    <p>这个美女很看我很喜欢这个美女很好看很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/13.jpg" />
+                    <p>这个美女很看我很喜欢这个美女很好看很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/14.jpg" />
+                    <p>这个美女很看我很喜欢这个美女很好看很好看我很喜欢</p>
+                </div>
+            </div>
+            <div class="pin">
+                <div class="box">
+                    <img src="./img/15.jpg" />
+                    <p>这个美女很看我很喜欢很好看很好看我很喜欢</p>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    </html>
